@@ -21,8 +21,12 @@ Route::get('/', function () {
     return view('home', ["user" => $user]);
 });
 
+// Show registration page
+Route::get('/register', function() {
+    return view('register');
+});
+
 // User authentication routes
-Route::get('/register', [UserController::class, 'showRegister']); // Registration Page: ("/register"), show registration page
 Route::post('/register', [UserController::class, 'register']); // handle registration form submission
 Route::post('/login', [UserController::class, 'login']); // handle login form submission
 Route::post('/logout', [UserController::class, 'logout']); // logout

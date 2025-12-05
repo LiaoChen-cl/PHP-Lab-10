@@ -1,28 +1,34 @@
-<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"><title>Register</title></head>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+</head>
 <body>
-    <h1>Register</h1>
 
-    <!-- Show form validation errors, if any -->
-    @if($errors->any())
-        <ul style="color:red;">
-            @foreach($errors->all() as $err)
-                <li>{{ $err }}</li>
-            @endforeach
-        </ul>
-    @endif
-
-    <!-- Registration form -->
-    <form action="/register" method="post">
+@auth
+    <!-- User is authenticated -->
+    <p>Hello {{$user}}</p>
+    <form action="/logout" method="post">
         @csrf
-        <input type="text" name="username" placeholder="Username"><br>
-        <input type="email" name="email" placeholder="Email"><br>
-        <input type="password" name="password" placeholder="Password"><br>
-        <button type="submit">Register</button>
+        <button>Logout</button>
     </form>
+@else
+    <div style="border: 3px solid #222; border-radius: 5px;">
+        <!-- User is not authenticated -->
+        <h1>Registration</h1>
 
-    <!-- Link back to login page -->
-    <p><a href="/">Back to Login</a></p>
+        <form action="/register" method="post">
+            @csrf
+            <input type="text" name="name" placeholder="name"><br>
+            <input type="email" name="email" placeholder="email"><br>
+            <input type="password" name="password" placeholder="password"><br>
+            <button type="submit">Submit</button>
+        </form>
+
+        <p><a href="/">Back to Login</a></p>
+    </div>
+@endauth
+
 </body>
 </html>

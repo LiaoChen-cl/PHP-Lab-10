@@ -2,67 +2,68 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
-use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
-    // 注册处理
+    // register handle
     public function register(Request $request)
     {
-        $data = $request->validate([
-            'username' => ['required','string','max:255', Rule::unique('users','name')],
-            'email'    => ['required','email', Rule::unique('users','email')],
-            'password' => ['required','string','min:3'],
+        // authentication input
+        $incomingData = $request->validate([
+            'name' => ['required', 'string', 'max:255', Rule::unique('users', 'name')],
+            'email' => ['required', 'email', Rule::unique('users', 'email')],
+            'password' => ['required', 'string', 'min:3', 'max:255'],
         ]);
 
-        $user = User::create([
-            'name'     => $data['username'],
-            'email'    => $data['email'],
-            'password' => bcrypt($data['password']),
-        ]);
+        // encryption password 
+        $incomingData['password'] = bcrypt($incomingData['password']);
 
-        return redirect('/'); // 注册成功重定向到首页（登录页）
+        // set up user
+        $user = User::create($incomingData); //back to instance
+
+       
+        // Handle the registration logic here
+        return redirect('/'); // regiter sucessfully go back to home
     }
 
-    // 登录处理
+    // login handle
     public function login(Request $request)
     {
         $credentials = $request->validate([
-            'loginName'     => ['required','string'],
-            'loginPassword' => ['required','string'],
+            'loginName' => ['required', 'string'],
+            'loginPassword' => ['required', 'string'],
         ]);
 
-        if (Auth::attempt(['name' => $credentials['loginName'], 'password' => $credentials['loginPassword']])) {
-            $request->session()->regenerate();
-            return redirect('/page1');
+        if (auth()->attempt([
+            'name' => $credentials['loginName'],
+            'password' => $credentials['loginPassword'],
+        ])) {
+            $request->session()->regenerate(); // prevent session fixation 攻击
+            return redirect('/page1'); // /redirect to page1
         }
 
-        // 认证失败：返回首页并显示错误
-        return back()->withErrors(['loginError' => 'The provided credentials do not match our records.']);
+        // login failed back to home
+        return redirect('/')->withErrors([
+            'loginError' => 'The provided credentials do not match our records.',
+        ]);
     }
 
-    // page1 视图
-    public function page1()
-    {
-        return view('page1');
-    }
-
-    // 登出
+    // sigh out
     public function logout(Request $request)
     {
-        Auth::logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-        return redirect('/');
+        auth()->logout(); // log out user
+        return redirect('/'); // redirect to home page after logout
     }
 
-    // 显示注册页面
-    public function showRegister()
+    public function page1()
     {
-        return view('register'); // 对应 resources/views/register.blade.php
+        $user = auth()->user()?->name; // login in get name, not null
+
+        return view('page1', ['user' => $user]); // go page1.blade.php
     }
+
 
 }
